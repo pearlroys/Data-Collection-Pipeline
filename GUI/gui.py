@@ -1,7 +1,15 @@
 from tk import *
 import tkinter as tk
 from PIL import Image, ImageTk
-from medexpress import Scraper
+# import sys to allow us to append the system path
+import sys
+import os
+
+
+# append the parent folder
+sys.path.append('../')
+from src.medexpress import Scraper
+print(sys.path)
 
 
 window = tk.Tk()
