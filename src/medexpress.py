@@ -1,3 +1,5 @@
+from curses.ascii import alt
+from token import AWAIT
 import selenium
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
@@ -14,6 +16,9 @@ import os
 import json
 import urllib.request
 import sys
+sys.path.append('../')
+from src.aws import AwsScraper
+
 
 
 
@@ -38,20 +43,13 @@ class Scraper:
         self.driver.get(url)
         time.sleep(2)
         self.delay = 10
+        self.aws = AwsScraper()
 
-    # def load_page(self, url) -> None:
-    #     """Loads the webpage with a given url in Google Chrome.
-    #     Args:
-    #         url (str): URL of target webpage to be loaded.
-    #     Returns:
-    #         None: Page loads but returns nothing.
-    #     """
-    #     self.driver.get(url)
-
-        
        
+        # set storage location
+        self.data_store = "./raw_data"
 
-
+    
     def get_drug_class(self): 
     
         """
@@ -84,7 +82,7 @@ class Scraper:
         class_dictionary = {0 :'erectile dysfunction', 1 : 'covid', 2 : 'migraine', 3 : 'period delay', 4 : 'asthma', 5 : 'herpes', 6 : 'acne', 7 : 'hair loss'}
 
         for key, value in class_dictionary.items():
-            # if class is given
+            # if class is give
             if value == self.class_choice.lower():
                 drug_class = drug_classes[key]
                 return drug_class
@@ -130,7 +128,7 @@ class Scraper:
             time.sleep(2)
             drug_name = self.driver.find_element(By.XPATH, '//div[@class="col-sm-7 product-row-title"]/h1').text
             #create drug folder inside raw_data folder and begin appending key/value pairs to dictionary
-            self._create_metadata_folders(f'raw_data/{drug_name}')
+            self._create_metadata_folders(f'raw_data/{self.class_choice}')
             drug_dictionary["DRUG NAME"] = drug_name
             drug_dictionary["ALTERNATIVES"] = drugs_list
             time.sleep(2)
@@ -183,12 +181,28 @@ class Scraper:
             return drug_dictionary
 
     def save_data(self):
+        drug_dictionary = self.get_metadata()
    
         # create the data.json from the above dictionary
-        with open(f"raw_data/{drug_name}/data.json", "w") as f:
-            drug_dictionary = self.get_metadata()
-            json_output = json.dump(drug_dictionary, f)
-            return json_output
+        with open(f"raw_data/{self.class_choice}/data.json", "w") as f:
+
+            try:
+                
+                json_output = json.dump(drug_dictionary, f)
+                s3_url = self.aws.upload_file_method(f"raw_data/{self.class_choice}/data.json", self.class_choice)
+                return(s3_url)
+            except Exception as e:
+
+                print(e)
+                return None
+
+            finally:
+                    
+                if os.path.exists(f"raw_data/{self.class_choice}/data.json"):
+                    
+                    os.remove(f"raw_data/{self.class_choice}/data.json")
+
+           
     
 
     @staticmethod  
@@ -223,12 +237,46 @@ class Scraper:
             image_img = image.find_elements(By.TAG_NAME, 'img')
             
             for i in image_img:
-                images_src = i.get_attribute('src') 
-                alt = i.get_attribute('alt')
-                urllib.request.urlretrieve(images_src, f"raw_data/images/{alt}.jpg")
+                try:
+                    images_src = i.get_attribute('src') 
+                    self.alt = i.get_attribute('alt')
+                    urllib.request.urlretrieve(images_src, f"raw_data/images/{self.alt}.jpg")
+
+                    s3_url = self.aws.upload_file_method(f"raw_data/images/{self.alt}.jpg", self.alt)
+                    return(s3_url)
+                except Exception as e:
+                    print(e)
+                    return None
+
+                finally:
+                    
+                    if os.path.exists(f"raw_data/images/{self.alt}"):
+                    
+                        os.remove(f"raw_data/images/{self.alt}")
+
+
+    # def data_dump(self,):
+    #     """
+    #     Parameters:
+    #     ----------
+    #     folder_name: str
+    #         String value of the folder path for each player's data store
+    #     Returns:
+    #     -------
+    #     None
+    #     """
+    #     try:
+    #         pic_file = (f"raw_data/images/{self.alt}.jpg")
+    #     except Exception:
+
+    #         pic_file = ""
+
+    #     self.upload_file_method((f"raw_data/{drug_name}/data.json"), drug_name, pic_file)
+    #     # return AwsScraper.upload_file_method()
                
 
 if __name__ == "__main__":
     bot = Scraper()
-    bot.get_metadata()
+    # bot.get_metadata()
     # bot.get_image()
+    bot.save_data()
