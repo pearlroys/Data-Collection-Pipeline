@@ -106,6 +106,7 @@ class Scraper:
         drug_links_container = self.driver.find_element(By.XPATH, '//div[@class="panel-treatment-row"]')
         link_tag = drug_links_container.find_elements(By.TAG_NAME, 'a')
         drugs_links = [item.get_attribute('href') for item in link_tag]
+        print(drugs_links)
         drugs_list = [name.split('/')[-1] for name in drugs_links]
         dict_self = {i : point.split('/')[-1] for i, point in enumerate(drugs_links)}
         # print(dict_self)
@@ -123,7 +124,7 @@ class Scraper:
         self.metadata_list = []
         # Goes to each drug link and scrapes relevant data from it
         drug_links = self.get_drug_links()
-        for i in drug_links:
+        for i in tqdm(drug_links):
             self.driver.get(i)
             time.sleep(2)
             drug_name = self.driver.find_element(By.XPATH, '//div[@class="col-sm-7 product-row-title"]/h1').text
@@ -148,7 +149,7 @@ class Scraper:
             quantity = [q.text for q in quanti]
             quanitities = [x for x in quantity if x != '']
             drug_dictionary["QUANTITY AVAILABLE"] = quanitities
-            #apppen uuid and unique id of code which in this case is the website link as the drug page had no visible unique id
+            #apppend uuid and unique id of code which in this case is the website link as the drug page had no visible unique id
             product_id_num = str(uuid.uuid4())
             product_id_num = product_id_num[:8]
             drug_dictionary["UUID"] = product_id_num
@@ -178,29 +179,34 @@ class Scraper:
             drug_infoo = [drug.text for drug in drun]
             drug_dictionary["INFORMATION"] = drug_infoo
             drug_dictionary["DRUG URL"] = i
-            return drug_dictionary
+            dictionary_copy = drug_dictionary.copy()
+            self.metadata_list.append(dictionary_copy) 
+        return (self.metadata_list)
 
     def save_data(self):
+
         drug_dictionary = self.get_metadata()
+        print(drug_dictionary)
    
         # create the data.json from the above dictionary
         with open(f"raw_data/{self.class_choice}/data.json", "w") as f:
 
-            try:
+            # try:
                 
-                json_output = json.dump(drug_dictionary, f)
-                s3_url = self.aws.upload_file_method(f"raw_data/{self.class_choice}/data.json", self.class_choice)
-                return(s3_url)
-            except Exception as e:
+            json_output = json.dump(drug_dictionary, f)
+            #upload to S3
+            s3_url = self.aws.upload_file_method(self.class_choice)
+            return(s3_url)
+            # except Exception as e:
 
-                print(e)
-                return None
+            #     print(e)
+            #     return None
 
-            finally:
+            # finally:
                     
-                if os.path.exists(f"raw_data/{self.class_choice}/data.json"):
+            #     if os.path.exists(f"raw_data/{self.class_choice}/data.json"):
                     
-                    os.remove(f"raw_data/{self.class_choice}/data.json")
+            #         os.remove(f"raw_data/{self.class_choice}/data.json")
 
            
     
@@ -280,3 +286,4 @@ if __name__ == "__main__":
     # bot.get_metadata()
     # bot.get_image()
     bot.save_data()
+    # bot.get_drug_links
