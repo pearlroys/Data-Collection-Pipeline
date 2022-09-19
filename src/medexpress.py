@@ -184,15 +184,19 @@ class Scraper:
         self.drug_dictionary["UUID"] = product_id_num
 
     def get_price(self, webpage_driver):
-        # self.driver.get(drug_link)
-        # time.sleep(2)
+        
+
         pri = webpage_driver.find_element(By.XPATH, '//div[@class="sitewide-sale-price-wrapper"]')
         price = pri.find_element(By.TAG_NAME, 'span')
         self.drug_dictionary["PRICE"] = price.text
 
     def get_drug_review(self, webpage_driver):
-        # self.driver.get(drug_link)
-        # time.sleep(2)
+        """get's drug review from page
+
+        Args:
+            webpage_driver (chrome_Webdriver): chrome_webdriver for that specific page)
+        """
+        
         try:
             reviews = webpage_driver.find_element(By.XPATH, '//div[@class="feefo-rating-big"]/span').text
         except:
@@ -201,8 +205,12 @@ class Scraper:
         self.drug_dictionary["REVIEWS"] = reviews
 
     def get_drug_info(self, webpage_driver):
-        # self.driver.get(drug_link)
-        # time.sleep(2)
+        """ gets drug information from each drug page
+
+        Args:
+            webpage_driver (chrome_Webdriver): chrome_webdriver for that specific page
+        """
+        
         drug_inf= webpage_driver.find_element(By.XPATH, '//amp-accordion[@class="i-amphtml-element i-amphtml-layout-container i-amphtml-built i-amphtml-layout"]')
             
         drug_info = drug_inf.find_element(By.XPATH, '//div[@class="tab-pane i-amphtml-accordion-content"]')
@@ -261,15 +269,11 @@ class Scraper:
         print(self.metadata_list) 
         return self.metadata_list
 
-    
-
    
     def save_data(self):
    
         # create the data.json from the above dictionary
         with open(f"raw_data/{self.class_choice}/data.json", "w") as f:
-
-            # try:
                 
             json_output = json.dump(self.drug_dictionary, f)
             #upload to S3
