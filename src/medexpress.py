@@ -348,9 +348,6 @@ class Scraper:
 if __name__ == "__main__":
     bot = Scraper()
     
-    
-    
-   
     class_choice = bot.get_drug_class()
     bot.get_class_links(class_choice)
     drugs_link = bot.get_drug_links()
