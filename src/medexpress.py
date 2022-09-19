@@ -1,5 +1,6 @@
 from curses.ascii import alt
 from token import AWAIT
+import datetime as datetime
 import selenium
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
@@ -35,7 +36,6 @@ class Scraper:
     url : str 
         the url of the desired website  
     """
-
 #to access website
     def __init__(self):
         self.driver = webdriver.Chrome(ChromeDriverManager().install())
@@ -44,8 +44,9 @@ class Scraper:
         time.sleep(2)
         self.delay = 10
         self.aws = AwsScraper()
-
+        self.drug_dictionary = {}
        
+        
         # set storage location
         self.data_store = "./raw_data"
 
@@ -56,10 +57,11 @@ class Scraper:
         This method gets the drug class to be scraped.
 
         """
+        
         self.class_choice = input("Enter drug class: ")
         return self.class_choice
 
-    def get_class_links(self):
+    def get_class_links(self, class_choice):
 
 
         """ This methods returns the link of the desired class and 
@@ -70,8 +72,7 @@ class Scraper:
         str
             a string with the url of the class of drugs
         """
-        #get user choice
-        self.get_drug_class()
+        
         # get drug class container
         class_container = self.driver.find_element(By.XPATH, '//div[@class="row margintop20"]')
         class_a_tag = class_container.find_elements(By.TAG_NAME, 'a')
@@ -83,9 +84,9 @@ class Scraper:
 
         for key, value in class_dictionary.items():
             # if class is give
-            if value == self.class_choice.lower():
-                drug_class = drug_classes[key]
-                return drug_class
+            if value == class_choice.lower():
+                self.drug_class = drug_classes[key]
+                return self.drug_class
     
     def get_drug_links(self):
         """
@@ -97,117 +98,184 @@ class Scraper:
             list containing the name of drugs in the class
             list containing hyperlinks to all drugs in the class
         """
-        global drugs_list
-        drug_class = self.get_class_links()
+        
+        
         # access class link
-        self.driver.get(drug_class)
+        self.driver.get(self.drug_class)
         time.sleep(2)
         # access drug list and links on class page 
         drug_links_container = self.driver.find_element(By.XPATH, '//div[@class="panel-treatment-row"]')
         link_tag = drug_links_container.find_elements(By.TAG_NAME, 'a')
-        drugs_links = [item.get_attribute('href') for item in link_tag]
-        print(drugs_links)
-        drugs_list = [name.split('/')[-1] for name in drugs_links]
-        dict_self = {i : point.split('/')[-1] for i, point in enumerate(drugs_links)}
-        # print(dict_self)
-        return (drugs_links)
+        self.drugs_links = [item.get_attribute('href') for item in link_tag]
+        return self.drugs_links
 
-    def get_metadata(self):
+    def get_drugs_list(self):
         """
-        This method collects metadata from each drug page
+        This method gets the names of the drugs in the list.
+
         Returns
         --------
-        Dictionary with meta data on each drug
+        lists
+            list containing the name of drugs in the class
         """
-        global drug_name
-        drug_dictionary = {}
-        self.metadata_list = []
-        # Goes to each drug link and scrapes relevant data from it
-        drug_links = self.get_drug_links()
-        for i in tqdm(drug_links):
-            self.driver.get(i)
-            time.sleep(2)
-            drug_name = self.driver.find_element(By.XPATH, '//div[@class="col-sm-7 product-row-title"]/h1').text
-            #create drug folder inside raw_data folder and begin appending key/value pairs to dictionary
-            self._create_metadata_folders(f'raw_data/{self.class_choice}')
-            drug_dictionary["DRUG NAME"] = drug_name
-            drug_dictionary["ALTERNATIVES"] = drugs_list
-            time.sleep(2)
-            # try and except statemnets used to bypass heterogeneity in websites htmls
-            try:
-                doses = self.driver.find_element(By.XPATH, '//ul[@class="nav nav-tabs strengthMenuTab"]')
-                doze = doses.find_elements(By.XPATH, '//span[@class="tab-dosage"]')
-                dosages = [items.text for items in doze]
-                dose = dosages[0:3]
-            except:
-                dose = 'only one dose available'
-            drug_dictionary["DOSAGES AVAILABLE"] = dose
-            time.sleep(2)
-            #Scrape quantity for each drug
-            quant = self.driver.find_element(By.XPATH, '//span[@class="select-container select-container-product"]')
-            quanti = quant.find_elements(By.XPATH, '//select[@class="quantityMenu"]/option')
-            quantity = [q.text for q in quanti]
-            quanitities = [x for x in quantity if x != '']
-            drug_dictionary["QUANTITY AVAILABLE"] = quanitities
-            #apppend uuid and unique id of code which in this case is the website link as the drug page had no visible unique id
-            product_id_num = str(uuid.uuid4())
-            product_id_num = product_id_num[:8]
-            drug_dictionary["UUID"] = product_id_num
-            time.sleep(2)
-            # get the price
-            pri = self.driver.find_element(By.XPATH, '//div[@class="sitewide-sale-price-wrapper"]')
-            price = pri.find_element(By.TAG_NAME, 'span')
-            drug_dictionary["PRICE"] = price.text
-            #get the reviews with a try and except block for drugs without reviews
-            try:
-                reviews = self.driver.find_element(By.XPATH, '//div[@class="feefo-rating-big"]/span').text
-            except:
-                reviews = 'No reviews available'
+        self.drugs_list = [name.split('/')[-1] for name in self.drugs_links]
+        dict_self = {i : point.split('/')[-1] for i, point in enumerate(self.drugs_links)}
+        return self.drugs_list
+        
+
+    def get_drug_name(self, webpage_driver):
+        """
+        This gets the name of the drug and updates the drug dictionary
+
+        Args:
+            webpage_driver: The webdriver for the current page,
+
+        Returns:
+            None
+        """
+        
+        
+
+        drug_name = webpage_driver.find_element(By.XPATH, '//div[@class="col-sm-7 product-row-title"]/h1').text
+        self.drug_dictionary["DRUG NAME"] = drug_name
+
+
+    def get_drug_dosage(self, webpage_driver) -> None:
+        """ gets drug dosage 
+
+        Args:
+            webpage_driver (chrome_Webdriver): chrome_webdriver for that specific page
+        """
+        
+        
+
+        try:
+            doses = webpage_driver.find_element(By.XPATH, '//ul[@class="nav nav-tabs strengthMenuTab"]')
+            doze = doses.find_elements(By.XPATH, '//span[@class="tab-dosage"]')
+            dosages = [items.text for items in doze]
+            dose = dosages[0:3]
+        except:
+            dose = 'only one dose available'
+        self.drug_dictionary["DOSAGES AVAILABLE"] = dose
+
+
+    def get_drug_quantity(self, webpage_driver):
+        """ gets the quantity of drugs needed
+
+        Args:
+            webpage_driver (chrome_Webdriver): chrome_webdriver for that specific page
+        """
+        
+
+        quant = webpage_driver.find_element(By.XPATH, '//span[@class="select-container select-container-product"]')
+        quanti = quant.find_elements(By.XPATH, '//select[@class="quantityMenu"]/option')
+        quantity = [q.text for q in quanti]
+        quanitities = [x for x in quantity if x != '']
+        self.drug_dictionary["QUANTITY AVAILABLE"] = quanitities
+
+
+    def get_unique_code(self):
+        """ 
+        generates a unique ID for each drug
+
+        """
+        product_id_num = str(uuid.uuid4())
+        product_id_num = product_id_num[:8]
+        self.drug_dictionary["UUID"] = product_id_num
+
+    def get_price(self, webpage_driver):
+        # self.driver.get(drug_link)
+        # time.sleep(2)
+        pri = webpage_driver.find_element(By.XPATH, '//div[@class="sitewide-sale-price-wrapper"]')
+        price = pri.find_element(By.TAG_NAME, 'span')
+        self.drug_dictionary["PRICE"] = price.text
+
+    def get_drug_review(self, webpage_driver):
+        # self.driver.get(drug_link)
+        # time.sleep(2)
+        try:
+            reviews = webpage_driver.find_element(By.XPATH, '//div[@class="feefo-rating-big"]/span').text
+        except:
+            reviews = 'No reviews available'
             
-            drug_dictionary["REVIEWS"] = reviews
-            time.sleep(2)
-            # get the drug information
-            drug_inf= self.driver.find_element(By.XPATH, '//amp-accordion[@class="i-amphtml-element i-amphtml-layout-container i-amphtml-built i-amphtml-layout"]')
+        self.drug_dictionary["REVIEWS"] = reviews
+
+    def get_drug_info(self, webpage_driver):
+        # self.driver.get(drug_link)
+        # time.sleep(2)
+        drug_inf= webpage_driver.find_element(By.XPATH, '//amp-accordion[@class="i-amphtml-element i-amphtml-layout-container i-amphtml-built i-amphtml-layout"]')
             
-            drug_info = drug_inf.find_element(By.XPATH, '//div[@class="tab-pane i-amphtml-accordion-content"]')
-            try:
-                drun = drug_info.find_elements(By.TAG_NAME, 'p')
-            except:
-                self.driver.implicitly_wait(10)
-                drun = drug_info.find_elements(By.TAG_NAME, 'h2')
-                drug_infoo = [drug.text for drug in drun]
+        drug_info = drug_inf.find_element(By.XPATH, '//div[@class="tab-pane i-amphtml-accordion-content"]')
+        try:
+            drun = drug_info.find_elements(By.TAG_NAME, 'p')
             drug_infoo = [drug.text for drug in drun]
-            drug_dictionary["INFORMATION"] = drug_infoo
-            drug_dictionary["DRUG URL"] = i
-            dictionary_copy = drug_dictionary.copy()
-            self.metadata_list.append(dictionary_copy) 
-        return (self.metadata_list)
+        except:
+            webpage_driver.implicitly_wait(10)
+            drun = drug_info.find_elements(By.TAG_NAME, 'h2')
+            drug_infoo = [drug.text for drug in drun]
+        
+        self.drug_dictionary["INFORMATION"] = drug_infoo
 
+    def get_metadata(self, drugs_link, drug_list):
+        """ This method creates different folders for data storage and gets data from each drug page
+        Args:
+            drug_links: the links of 
+            drug_list: the list of drugs in the class
+
+        Returns:
+            a dictionary with all the data from each drug in the class
+        -----------
+        directory_name : str
+            a string representing the name of a new folder to be created and cd into
+        """
+
+        self._create_metadata_folders(f'raw_data/{self.class_choice}')
+
+        self.metadata_list = []
+        for i in tqdm(drugs_link):
+            self.driver.get(i)
+            webpage_driver = self.driver
+            time.sleep(2)
+            self.drug_dictionary["ALTERNATIVES"] = drug_list
+
+            # get the drug name and update the drug dictionary
+            self.get_drug_name(webpage_driver=webpage_driver)
+            #get drug dosage
+            self.get_drug_dosage(webpage_driver)
+            # get drug quantity
+            self.get_drug_quantity(webpage_driver)
+            # get unique code
+            self.get_unique_code()
+            # get drug price
+            self.get_price(webpage_driver)
+            # get drug review
+            self.get_drug_review(webpage_driver)
+            # get drug info
+            self.get_drug_info(webpage_driver)
+            # get drug dictionary
+            self.drug_dictionary["DRUG URL"] = i
+            # make a copy of the dictionary
+            dictionary_copy = self.drug_dictionary.copy()
+
+            self.metadata_list.append(dictionary_copy)
+        print(self.metadata_list) 
+        return self.metadata_list
+
+    
+
+   
     def save_data(self):
-
-        drug_dictionary = self.get_metadata()
-        print(drug_dictionary)
    
         # create the data.json from the above dictionary
         with open(f"raw_data/{self.class_choice}/data.json", "w") as f:
 
             # try:
                 
-            json_output = json.dump(drug_dictionary, f)
+            json_output = json.dump(self.drug_dictionary, f)
             #upload to S3
             s3_url = self.aws.upload_file_method(self.class_choice)
             return(s3_url)
-            # except Exception as e:
-
-            #     print(e)
-            #     return None
-
-            # finally:
-                    
-            #     if os.path.exists(f"raw_data/{self.class_choice}/data.json"):
-                    
-            #         os.remove(f"raw_data/{self.class_choice}/data.json")
-
+            
            
     
 
@@ -223,7 +291,7 @@ class Scraper:
         if not os.path.exists(folder_name):
             os.makedirs(folder_name)
        
-    def get_image(self):
+    def get_image(self, drugs_link):
         """
         This Method created a folder called 'images' in the raw data folder
         scrapes images for each drug and stores them in the folder.
@@ -233,8 +301,8 @@ class Scraper:
         images stored as jpg files
 
         """
-        drug_links = self.get_drug_links()
-        for i in drug_links:
+        
+        for i in drugs_link:
             self.driver.get(i)
             time.sleep(2)
             # get image 
@@ -261,29 +329,33 @@ class Scraper:
                         os.remove(f"raw_data/images/{self.alt}")
 
 
-    # def data_dump(self,):
-    #     """
-    #     Parameters:
-    #     ----------
-    #     folder_name: str
-    #         String value of the folder path for each player's data store
-    #     Returns:
-    #     -------
-    #     None
-    #     """
-    #     try:
-    #         pic_file = (f"raw_data/images/{self.alt}.jpg")
-    #     except Exception:
+    def _quit_scraper(self):
+        ''' 
+        The quit_scraper function will close the scraper once the data is collected and saved.
+        '''
+        self.driver.quit()
 
-    #         pic_file = ""
+    
 
-    #     self.upload_file_method((f"raw_data/{drug_name}/data.json"), drug_name, pic_file)
-    #     # return AwsScraper.upload_file_method()
-               
+        
+        
+    
 
 if __name__ == "__main__":
     bot = Scraper()
-    # bot.get_metadata()
-    # bot.get_image()
+    
+    
+    
+   
+    class_choice = bot.get_drug_class()
+    bot.get_class_links(class_choice)
+    drugs_link = bot.get_drug_links()
+    drugs_list = bot.get_drugs_list()
+    bot.get_metadata(drugs_link, drugs_list)
     bot.save_data()
-    # bot.get_drug_links
+    bot.get_image(drugs_link)
+    bot._quit_scraper()
+
+
+    
+    
