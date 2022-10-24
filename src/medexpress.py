@@ -1,6 +1,6 @@
 from curses.ascii import alt
+import pwd
 from token import AWAIT
-import datetime as datetime
 import selenium
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
@@ -11,6 +11,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import WebDriverException, TimeoutException
 from tqdm import tqdm
+import datetime as datetime
+
 import time
 import uuid
 import os
@@ -19,13 +21,6 @@ import urllib.request
 import sys
 sys.path.append('../')
 from src.aws import AwsScraper
-
-
-
-
-
-
-
 
 class Scraper:
     """ This class contains all the navigation & data collection methods
@@ -83,7 +78,7 @@ class Scraper:
         class_dictionary = {0 :'erectile dysfunction', 1 : 'covid', 2 : 'migraine', 3 : 'period delay', 4 : 'asthma', 5 : 'herpes', 6 : 'acne', 7 : 'hair loss'}
 
         for key, value in class_dictionary.items():
-            # if class is give
+            # if class is given
             if value == class_choice.lower():
                 self.drug_class = drug_classes[key]
                 return self.drug_class
@@ -133,8 +128,6 @@ class Scraper:
         Returns:
             None
         """
-        
-        
 
         drug_name = webpage_driver.find_element(By.XPATH, '//div[@class="col-sm-7 product-row-title"]/h1').text
         self.drug_dictionary["DRUG NAME"] = drug_name
@@ -146,9 +139,6 @@ class Scraper:
         Args:
             webpage_driver (chrome_Webdriver): chrome_webdriver for that specific page
         """
-        
-        
-
         try:
             doses = webpage_driver.find_element(By.XPATH, '//ul[@class="nav nav-tabs strengthMenuTab"]')
             doze = doses.find_elements(By.XPATH, '//span[@class="tab-dosage"]')
@@ -165,8 +155,6 @@ class Scraper:
         Args:
             webpage_driver (chrome_Webdriver): chrome_webdriver for that specific page
         """
-        
-
         quant = webpage_driver.find_element(By.XPATH, '//span[@class="select-container select-container-product"]')
         quanti = quant.find_elements(By.XPATH, '//select[@class="quantityMenu"]/option')
         quantity = [q.text for q in quanti]
@@ -227,14 +215,14 @@ class Scraper:
     def get_metadata(self, drugs_link, drug_list):
         """ This method creates different folders for data storage and gets data from each drug page
         Args:
-            drug_links: the links of 
+            drug_links: the link to drugs in the class
             drug_list: the list of drugs in the class
 
         Returns:
             a dictionary with all the data from each drug in the class
         -----------
         directory_name : str
-            a string representing the name of a new folder to be created and cd into
+            a string representing the name of a new folder to be created and cd'ed into
         """
 
         self._create_metadata_folders(f'raw_data/{self.class_choice}')

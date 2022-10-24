@@ -9,10 +9,6 @@ BUCKET_NAME = 'medexpress-bucket'
 
 class AwsScraper:
     def __init__(self):
-        # self.s3 = boto3.client('s3')
-        # s3_client = boto3.client('s3')
-        # self.s3b = boto3.resource('s3')
-        # set storage location
         self.data_store = "./raw_data"
 
    
@@ -37,4 +33,4 @@ class AwsScraper:
         return file_url
 
 aws = AwsScraper()
-aws.upload_file_method('asthma')
+# aws.upload_file_method('asthma')
