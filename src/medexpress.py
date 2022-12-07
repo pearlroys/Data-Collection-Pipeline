@@ -5,14 +5,13 @@ import selenium
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
-from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import WebDriverException, TimeoutException
+from selenium.webdriver.common.keys import Keys
 from tqdm import tqdm
 import datetime as datetime
-
 import time
 import uuid
 import os
@@ -33,7 +32,19 @@ class Scraper:
     """
 #to access website
     def __init__(self):
-        self.driver = webdriver.Chrome(ChromeDriverManager().install())
+        chrome_options = Options()
+        options = webdriver.ChromeOptions()
+        options.add_argument("start-maximized") # open Browser in maximized mode
+        options.add_argument("disable-infobars")# disabling infobars
+        options.add_argument("--disable-extensions"); # disabling extensions
+        options.add_argument("--no-sandbox") 
+        options.add_argument("--headless")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--disable-setuid-sandbox") 
+        options.add_argument('--disable-gpu')      
+        options.add_argument("user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36")
+        options.add_argument("window-size=1920,1080")
+        self.driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)  
         url = "https://www.medexpress.co.uk"
         self.driver.get(url)
         time.sleep(2)
@@ -308,7 +319,7 @@ class Scraper:
                     self.alt = i.get_attribute('alt')
                     urllib.request.urlretrieve(images_src, f"raw_data/images/{self.alt}.jpg")
 
-                    s3_url = self.aws.upload_file_method(f"raw_data/images/{self.alt}.jpg", self.alt)
+                    s3_url = self.aws.upload_image_method(self.alt)
                     return(s3_url)
                 except Exception as e:
                     print(e)
@@ -326,12 +337,7 @@ class Scraper:
         The quit_scraper function will close the scraper once the data is collected and saved.
         '''
         self.driver.quit()
-
-    
-
-        
-        
-    
+   
 
 if __name__ == "__main__":
     bot = Scraper()
