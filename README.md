@@ -23,7 +23,7 @@ The requirements for this data collection pipeline are to:
 
 The project was completed using [VS Code](https://code.visualstudio.com/) as a code editor, plus Git and GitHub for version control. The environment setup was done by creating a new environment, `web-scraping`, in conda. After every required package had been installed, a `requirements.txt` file was generated.
 
-The choice of website to scrape was based on two main criteria: personal interest, and my background in healthcare as a Doctor and a care assitant. My choice fell rather naturally on [Pharmaceutical company](https://www.medexpress.co.uk/). Quite luckily, the website was challenging to scrape (possibly too much?) and offered plenty of opportunities to learn HTML tricks.
+The choice of website to scrape was based on two main criteria: personal interest, and my background in healthcare as a Doctor and a care assitant. My choice fell rather naturally on a [Pharmaceutical company](https://www.medexpress.co.uk/). Scraping the website was challenging but offered plenty of opportunities to learn HTML tricks.
 
 Given that the website included many classes of drugs to choose from, I decided to reduce the scope of my project to only include drugs that were commonly bought as shown on the image below.
 
@@ -44,7 +44,7 @@ The project is written in Python and utilises OOP concepts throughout.
 The program utilises numerous `time.sleep(2)` methods to make sure the website does not recognise it as a bot and blocks our IP address.
 ## Milestone 4: Retreive data from details page
 
-In this milestone, I created a method called `get_metadata(self, drugs_link, drug_list)` which loops through the `drug_links` list and creates dictionaries that map pre-determined keys (labels) to values extracted from a link. The dictionaries are then systematically appended to the end of the `self.drug_dictionary` list. The dictionaries have the structure thet follows:
+In this milestone, I created a method called `get_metadata(self, drugs_link, drug_list)` which loops through the `drug_links` list and creates dictionaries that map pre-determined keys (labels) to values extracted from a link. The dictionaries are then systematically appended to the end of the `self.drug_dictionary` list. The dictionaries structure was as follows:
 
 ```python
 self.drug_dictionary = {"DRUG NAME": , "DOSAGES AVAILABLE": , "QUANTITY AVAILABLE": , "UUID": , "PRICE": , "REVIEWS": , "INFORMATION": }
@@ -52,8 +52,6 @@ self.drug_dictionary = {"DRUG NAME": , "DOSAGES AVAILABLE": , "QUANTITY AVAILABL
 ```
 
 Both the scraped images and the .json file are stored in a dedicated local directory called `raw_data`.
-
-
 
 The most important takeaways of this milestone where the correct implementation of while loops and choice of relative xpaths to extract content from the page. I also learnt how to download images locally and to create a .json file from a list of dictionaries using the `json.dump()` method to store data locally.
 
@@ -88,9 +86,8 @@ self.drug_dictionary["DRUG URL"] = i
 - imports and from statements are in consistent alphabetical order;
 - there are no nested loops within the code.
 
-In the second part of this milestone, I created unit tests for my scraper using `unittest`, i.e., one test for each of the public methods of my `Scraper()` class. These are in the file `test_scraper.py` and `test_images.py` within the `tests` directory. They are run from `__main__.py`. While this was my first time performing unit testing, the process went quite smoothly and was not too time-consuming.
+In the second part of this milestone, I created unit tests for my scraper using `unittest`, i.e., one test for each of the public methods of my `Scraper()` class. These are in the file `test_scraper.py` and `test_images.py` within the `tests` file. They are run from `__main__.py`.
 
-The best takeaway from this milestone was how to make my code a package to make sure all imports function throughout.
 
 ## Milestone 6
 
@@ -111,9 +108,9 @@ With the basic scraper code in `scraper.py` refactored and passing all tests, mi
         self.driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)  
 ```
 
-The following task of this milestone was indeed the creation of a `Dockerfile` to build a scraper image locally. This required instructions to:
+The following task of this milestone was ithe creation of a `Dockerfile` to build a scraper image locally. This required instructions to:
 
-- choose a base image (in my case, `python:3.9`);
+- choose a base image (in my case, `python:latest`);
 - put everything required by my scraper within the container;
 - install all dependencies;
 - run the main Python file.
