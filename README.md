@@ -1,7 +1,7 @@
 # Data-Collection-Pipeline
 
 
-As part of my training at [AiCore] i worked on a webscraping project <img width="1177" alt="Screenshot 2022-12-07 at 11 44 44" src="https://user-images.githubusercontent.com/103274172/206193205-ea30b283-43d2-49f4-ad31-648b7c506947.png">
+As part of my training at AiCore I worked on a webscraping project <img width="1177" alt="Screenshot 2022-12-07 at 11 44 44" src="https://user-images.githubusercontent.com/103274172/206193205-ea30b283-43d2-49f4-ad31-648b7c506947.png">
 
 ## 🏅 Goals of the project 🏅
 
