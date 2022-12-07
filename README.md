@@ -3,8 +3,6 @@
 
 As part of my training at [AiCore] i worked on a webscraping project <img width="1177" alt="Screenshot 2022-12-07 at 11 44 44" src="https://user-images.githubusercontent.com/103274172/206193205-ea30b283-43d2-49f4-ad31-648b7c506947.png">
 
-![Image from the AiCore portal](images/portal.png)
-
 ## 🏅 Goals of the project 🏅
 
 The requirements for this data collection pipeline are to:
@@ -29,7 +27,7 @@ The choice of website to scrape was based on two main criteria: personal interes
 
 Given that the website included many classes of drugs to choose from, I decided to reduce the scope of my project to only include drugs that were commonly bought as shown on the image below.
 
-![Image from the RightMove website](images/website.png)
+<img width="1243" alt="Screenshot 2022-12-07 at 11 45 32" src="https://user-images.githubusercontent.com/103274172/206193470-bc531e0f-5feb-4b68-8d14-c28d12ecf86e.png">
 
 ## Milestone 3: Find links to the pages from which we wish to scrape data
 
@@ -46,17 +44,16 @@ The project is written in Python and utilises OOP concepts throughout.
 The program utilises numerous `time.sleep(2)` methods to make sure the website does not recognise it as a bot and blocks our IP address.
 ## Milestone 4: Retreive data from details page
 
-In this milestone, I created a method called get_metadata(self, drugs_link, drug_list)` which loops through the `drug_links` list and creates dictionaries that map pre-determined keys (labels) to values extracted from a link. The dictionaries are then systematically appended to the end of the `self.drug_dictionary` list. The dictionaries have the structure thet follows:
+In this milestone, I created a method called `get_metadata(self, drugs_link, drug_list)` which loops through the `drug_links` list and creates dictionaries that map pre-determined keys (labels) to values extracted from a link. The dictionaries are then systematically appended to the end of the `self.drug_dictionary` list. The dictionaries have the structure thet follows:
 
 ```python
 self.drug_dictionary = {"DRUG NAME": , "DOSAGES AVAILABLE": , "QUANTITY AVAILABLE": , "UUID": , "PRICE": , "REVIEWS": , "INFORMATION": }
 
 ```
 
-
 Both the scraped images and the .json file are stored in a dedicated local directory called `raw_data`.
 
-![Image showing the scraper in action](images/working_scraper.png)
+
 
 The most important takeaways of this milestone where the correct implementation of while loops and choice of relative xpaths to extract content from the page. I also learnt how to download images locally and to create a .json file from a list of dictionaries using the `json.dump()` method to store data locally.
 
