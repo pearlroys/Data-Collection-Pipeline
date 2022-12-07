@@ -1,7 +1,7 @@
 # Data-Collection-Pipeline
 
 
-As part of my training at [AiCore] i worked on a webscraping project(https://www.theaicore.com/?utm_source=google&utm_medium=cpc&utm_campaign=new-broad&utm_term=classification&utm_source=google&utm_medium=ppc&utm_campaign=UK-Brand&utm_term=ai%20core&utm_content=621263672281&hsa_acc=7296592433&hsa_cam=13050226730&hsa_grp=146850559851&hsa_ad=621263672281&hsa_src=g&hsa_tgt=kwd-453580118074&hsa_kw=ai%20core&hsa_mt=e&hsa_net=adwords&hsa_ver=3&gclid=Cj0KCQjwj7CZBhDHARIsAPPWv3cRHYGa6UYh2t0kFM_4r7C6QAXdB4IMha25Y77p7wcgt712S5vymj4aAq8xEALw_wcB). 
+As part of my training at [AiCore] i worked on a webscraping project <img width="1177" alt="Screenshot 2022-12-07 at 11 44 44" src="https://user-images.githubusercontent.com/103274172/206193205-ea30b283-43d2-49f4-ad31-648b7c506947.png">
 
 ![Image from the AiCore portal](images/portal.png)
 
